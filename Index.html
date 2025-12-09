@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Портфолио Maxim — AI Style</title>
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --glass:rgba(255,255,255,0.06);
+      --stroke:rgba(255,255,255,0.12);
+      --text:#e6f1ff;
+      --muted:#9fb3c8;
+      --accent:#27f89c;
+      --accent2:#7aa7ff;
+      --radius:16px;
+      --blur:18px;
+      --shadow:0 10px 30px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:"Inter",system-ui,sans-serif;
+      background:
+        radial-gradient(1200px 800px at 80% -10%, rgba(39,248,156,0.08), transparent 60%),
+        radial-gradient(1200px 800px at 10% 110%, rgba(122,167,255,0.08), transparent 60%),
+        var(--bg);
+      color:var(--text);
+      overflow-x:hidden;
+    }
+
+    /* ambient wash */
+    body::before{
+      content:"";
+      position:fixed; inset:-10% -10%; z-index:0;
+      background: conic-gradient(from 0deg at 50% 50%, rgba(39,248,156,0.06), rgba(122,167,255,0.06), rgba(39,248,156,0.06));
+      filter: blur(80px);
+      animation: spin 30s linear infinite;
+      pointer-events:none;
+      opacity:.6;
+    }
+    @keyframes spin { to { transform: rotate(360deg) } }
+
+    /* canvases */
+    #sphere{display:block; width:100%; height:340px}
+    #bg{position:fixed; inset:0; z-index:0; filter:contrast(110%); opacity:.7}
+
+    .wrap{position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:24px 20px 120px}
+    .panel{
+      background:var(--glass);
+      border:1px solid var(--stroke);
+      border-radius:var(--radius);
+      backdrop-filter:blur(var(--blur));
+      box-shadow:var(--shadow);
+      padding:24px;
+      margin-bottom:28px;
+    }
+    h1{text-align:center;font-size:42px;margin:0 0 10px;letter-spacing:-0.02em}
+    h2{color:#a5ffdf;font-size:24px;margin:0 0 14px;letter-spacing:0.02em;text-transform:uppercase}
+    header p{color:var(--muted);text-align:center;margin:0}
+
+    .reveal{opacity:0; transform: translateY(14px); transition: .7s cubic-bezier(.2,.7,.2,1)}
+    .reveal.show{opacity:1; transform: none}
+
+    /* projects + tilt */
+    .projects{display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+    .card{
+      position:relative;
+      padding:18px; border-radius:14px;
+      background:rgba(255,255,255,0.05); border:1px solid var(--stroke);
+      box-shadow:var(--shadow);
+      transform-style:preserve-3d;
+      transition: transform .15s ease, box-shadow .15s ease;
+      overflow:hidden; isolation:isolate;
+    }
+    .card .glow{
+      content:""; position:absolute; inset:-20%; z-index:-1;
+      background: radial-gradient(500px 300px at var(--mx,50%) var(--my,50%), rgba(39,248,156,0.12), transparent 60%);
+      transition: 0.12s ease;
+    }
+    .card:hover{ box-shadow: 0 20px 40px rgba(0,0,0,0.35) }
+
+    /* GitHub кнопка */
+    .btn-github{
+      display:inline-flex; align-items:center; gap:10px;
+      margin-top:12px; padding:10px 16px; border-radius:12px;
+      background:linear-gradient(90deg,var(--accent),var(--accent2));
+      color:#07120e; font-weight:700; text-decoration:none;
+      border:1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 0 22px rgba(122,167,255,0.35), inset 0 1px 0 rgba(255,255,255,0.35);
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .btn-github::before{
+      content:"★"; display:inline-block; color:#07120e;
+      width:18px; height:18px; border-radius:50%;
+      background:rgba(255,255,255,0.7); text-align:center; line-height:18px; font-size:12px;
+    }
+    .btn-github:hover{ transform: translateY(-2px); box-shadow: 0 0 30px rgba(122,167,255,0.5) }
+
+    /* skills */
+    .skills .row{display:flex;align-items:center;gap:12px;margin:10px 0}
+    .skills .label{min-width:210px;color:#d7e8ff}
+    .bar{flex:1; height:12px; background:rgba(255,255,255,0.06); border:1px solid var(--stroke); border-radius:10px; overflow:hidden; position:relative}
+    .bar > i{display:block; height:100%; background:linear-gradient(90deg, rgba(39,248,156,0.8), rgba(122,167,255,0.85)); width:0%; transition: width 1s cubic-bezier(.2,.7,.2,1)}
+    .bar .spark{position:absolute; top:-6px; width:14px; height:14px; border-radius:50%; background:var(--accent); box-shadow:0 0 14px var(--accent); transform: translateX(0); transition: transform 1s cubic-bezier(.2,.7,.2,1)}
+
+    /* goals */
+    .goals{display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+    .goal{
+      display:flex; flex-direction:column; align-items:center; gap:10px;
+      padding:20px; border-radius:16px; background:rgba(255,255,255,0.04);
+      border:1px solid var(--stroke); box-shadow:var(--shadow);
+    }
+    .dial{
+      --val: 0%;
+      width:120px; height:120px; border-radius:50%;
+      background:
+        radial-gradient(closest-side, rgba(10,14,24,0.9) 64%, transparent 65%),
+        conic-gradient(var(--accent) var(--val), rgba(255,255,255,0.08) 0);
+      border:1px solid var(--stroke);
+      box-shadow: 0 0 24px rgba(39,248,156,0.35);
+      display:grid; place-items:center;
+      color:#a5ffdf; font-weight:700; font-size:18px;
+    }
+    .goal strong{color:#e6f1ff}
+    .goal small{color:var(--muted); text-align:center}
+
+    /* interests */
+    .interests{display:flex; flex-wrap:wrap; gap:8px}
+    .chip{padding:8px 12px; border-radius:999px; background:rgba(255,255,255,0.06); border:1px solid var(--stroke); color:#cfe6ff; font-size:13px; transition:transform .12s ease, box-shadow .12s ease}
+    .chip:hover{ transform: translateY(-2px); box-shadow: 0 8px 24px rgba(122,167,255,0.16) }
+
+    /* contacts */
+    .contacts{text-align:center}
+    .contacts a{
+      display:inline-flex; align-items:center; gap:10px;
+      margin:8px; padding:10px 16px; border-radius:12px;
+      background:linear-gradient(180deg, rgba(39,248,156,0.18), rgba(122,167,255,0.08));
+      color:var(--text); text-decoration:none; border:1px solid var(--stroke);
+      box-shadow:var(--shadow);
+      transition: transform .12s ease, border-color .12s ease;
+    }
+    .contacts a:hover{ transform: translateY(-1px); border-color: rgba(39,248,156,0.5)}
+
+    footer{ text-align:center; padding:34px 20px; color:#cfe6ff; font-style:italic; background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); border:1px solid var(--stroke); border-radius:var(--radius)}
+  </style>
+</head>
+<body>
+  <!-- Сфера-ядро сверху -->
+  <canvas id="sphere"></canvas>
+  <!-- Частицы фона -->
+  <canvas id="bg"></canvas>
+
+  <div class="wrap">
+    <header class="panel reveal">
+      <h1>Maxim — архитектор живых интерфейсов</h1>
+      <p>Создаю выразимые цифровые продукты: код, дизайн и бизнес как живой ритуал</p>
+    </header>
+
+    <section class="panel reveal">
+      <h2>🚀 Проекты</h2>
+      <div class="projects" id="projects">
+        <article class="card tilt">
+          <div class="glow"></div>
+          <h3>Core</h3>
+          <p>React‑like движок без сборки: VDOM, JSX, props, children, useState.</p>
+          <a class="btn-github" href="https://github.com/MaksimBin/Core" target="_blank">GitHub →</a>
+        </article>
+        <article class="card tilt">
+          <div class="glow"></div>
+          <h3>Опасности</h3>
+          <p>Интерфейс с диаграммой риска и динамическими сегментами.</p>
+          <a class="btn-github" href="https://github.com/MaksimBin/Dangers" target="_blank">GitHub →</a>
+        </article>
+        <article class="card tilt">
+          <div class="glow"></div>
+          <h3>Чат с ИИ</h3>
+          <p>Чёрный фон, закруглённые сообщения, зелёный плейлоадер.</p>
+          <a class="btn-github" href="https://github.com/MaksimBin/AIChat" target="_blank">GitHub →</a>
+        </article>
+        <article class="card tilt">
+          <div class="glow"></div>
+          <h3>Аудиовизуализация</h3>
+          <p>Захват звука и спектр в реальном времени.</p>
+          <a class="btn-github" href="https://github.com/MaksimBin/AudioViz" target="_blank">GitHub →</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel reveal skills" id="skills">
+      <h2>🧩 Навыки</h2>
+      <div class="row"><span class="label">JavaScript (ES6+)</span><div class="bar"><i style="--w:90%"></i><span class="spark"></span></div></div>
+      <div class="row"><span class="label">UI архитектуры</span><div class="bar"><i style="--w:85%"></i><span class="spark"></span></div></div>
+      <div class="row"><span class="label">Buildless подходы</span><div class="bar"><i style="--w:80%"></i><span class="spark"></span></div></div>
+      <div class="row"><span class="label">Node.js</span><div class="bar"><i style="--w:70%"></i><span class="spark"></span></div></div>
+    </section>
+
+    <section class="panel reveal" id="goals">
+      <h2>🎯 Цели</h2>
+      <div class="goals">
+        <div class="goal">
+          <div class="dial" style="--val:65%">65%</div>
+          <strong>SPA «available masters»</strong>
+          <small>Карта, пуш‑уведомления, геймификация, бронирование</small>
+        </div>
+        <div class="goal">
+          <div class="dial" style="--val:40%">40%</div>
+          <strong>Работа JS (Junior/Middle) в Москве</strong>
+          <small>Резюме, портфолио, таргет вакансий, отклики</small>
+        </div>
+        <div class="goal">
+          <div class="dial" style="--val:55%">55%</div>
+          <strong>Документация и бренд</strong>
+          <small>Единая визуальная система, демо, гайдлайны</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel reveal">
+      <h2>✨ Интересы</h2>
+      <div class="interests">
+        <div class="chip">Generative Art</div>
+        <div class="chip">SaaS</div>
+        <div class="chip">Joyful Design</div>
+        <div class="chip">AI</div>
+        <div class="chip">Open Source</div>
+        <div class="chip">Real‑time UX</div>
+      </div>
+    </section>
+
+    <section class="panel reveal contacts">
+      <h2>📬 Контакты</h2>
+      <a href="mailto:your-email@example.com">Email</a>
+      <a href="https://t.me/yourtelegram">Telegram</a>
+      <a href="https://linkedin.com/in/yourprofile">LinkedIn</a>
+      <a href="https://github.com/MaksimBin">GitHub</a>
+    </section>
+
+    <section class="panel reveal">
+      <h2>📊 GitHub API</h2>
+      <div id="repos" style="display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+        <article class="card tilt"><div class="glow"></div><p style="color:var(--muted)">Загрузка репозиториев…</p></article>
+      </div>
+    </section>
+
+    <footer class="reveal">
+      «Код, дизайн и бизнес — живые ритуалы, стремящиеся к ясности и эмоциональному резонансу.»
+    </footer>
+  </div>
+
+  <script>
+    // Sphere animation (breathing gradient + halo particles)
+    (function(){
+      const canvas = document.getElementById('sphere');
+      const ctx = canvas.getContext('2d');
+      let W = innerWidth, H = canvas.clientHeight || 340;
+      let dpr = Math.min(devicePixelRatio||1, 2);
+      function resize(){
+        W = innerWidth; H = canvas.clientHeight || 340;
+        canvas.width = W * dpr; canvas.height = H * dpr;
+        ctx.setTransform(dpr,0,0,dpr,0,0);
+      }
+      resize();
+
+      let t = 0;
+      const haloN = 64;
+      function draw(){
+        ctx.clearRect(0,0,W,H);
+        const cx = W/2, cy = H/2;
+        const baseR = 120, r = baseR + Math.sin(t)*10;
+
+        const grad = ctx.createRadialGradient(cx,cy,r*0.3, cx,cy,r);
+        grad.addColorStop(0,'rgba(39,248,156,0.85)');
+        grad.addColorStop(0.5,'rgba(122,167,255,0.65)');
+        grad.addColorStop(1,'rgba(39,248,156,0.12)');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+
+        ctx.fillStyle = 'rgba(255,255,255,0.12)';
+        ctx.beginPath(); ctx.ellipse(cx-r*0.25, cy-r*0.25, r*0.18, r*0.12, -0.6, 0, Math.PI*2); ctx.fill();
+
+        for(let i=0;i<haloN;i++){
+          const a = t*0.6 + i*(Math.PI*2/haloN);
+          const rr = r + 26 + Math.sin(t+i*0.7)*6;
+          const x = cx + Math.cos(a)*rr;
+          const y = cy + Math.sin(a)*rr;
+          ctx.fillStyle = 'rgba(167,219,255,0.8)';
+          ctx.beginPath(); ctx.arc(x,y,1.7,0,Math.PI*2); ctx.fill();
+        }
+
+        t += 0.02;
+        requestAnimationFrame(draw);
+      }
+      draw();
+      addEventListener('resize', resize, {passive:true});
+    })();
+
+    // Background particles
+    (function(){
+      const c = document.getElementById('bg');
+      const ctx = c.getContext('2d');
+      let w = innerWidth, h = innerHeight, dpr = Math.min(devicePixelRatio||1, 2);
+      function resize(){
+        w = innerWidth; h = innerHeight;
+        c.width = w * dpr; c.height = h * dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+      }
+      resize();
+      const N = 120;
+      const pts = Array.from({length:N}, () => ({
+        x: Math.random()*w, y: Math.random()*h,
+        vx: (Math.random()*2-1)*0.3, vy: (Math.random()*2-1)*0.3
+      }));
+      function step(){
+        ctx.clearRect(0,0,w,h);
+        const g = ctx.createRadialGradient(w*0.5,h*0.4,10, w*0.5,h*0.4, Math.max(w,h)*0.6);
+        g.addColorStop(0,'rgba(39,248,156,0.03)');
+        g.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+
+        for(let i=0;i<N;i++){
+          const p = pts[i];
+          p.x+=p.vx; p.y+=p.vy;
+          if(p.x<0||p.x>w) p.vx*=-1;
+          if(p.y<0||p.y>h) p.vy*=-1;
+
+          ctx.fillStyle = 'rgba(167,219,255,0.95)';
+          ctx.beginPath(); ctx.arc(p.x,p.y,1.1,0,Math.PI*2); ctx.fill();
+
+          for(let j=i+1;j<N;j++){
+            const q = pts[j];
+            const dx = p.x-q.x, dy = p.y-q.y, dist = Math.hypot(dx,dy);
+            if(dist<100){
+              ctx.strokeStyle = `rgba(122,167,255,${(1-dist/100)*0.25})`;
+              ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(q.x,q.y); ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(step);
+      }
+      step();
+      addEventListener('resize', resize, {passive:true});
+    })();
+
+    // Scroll reveal
+    (function(){
+      const els = Array.from(document.querySelectorAll('.reveal'));
+      const onScroll = ()=>{
+        const vh = innerHeight;
+        els.forEach(el=>{
+          const y = el.getBoundingClientRect().top;
+          if(y < vh - 80) el.classList.add('show');
+        });
+      };
+      document.addEventListener('scroll', onScroll, {passive:true});
+      onScroll();
+    })();
+
+    // Card glow follow + tilt
+    (function(){
+      function bindTilt(root=document){
+        const cards = root.querySelectorAll('.card.tilt');
+        cards.forEach(card=>{
+          let glow = card.querySelector('.glow');
+          if(!glow){ glow = document.createElement('div'); glow.className='glow'; card.prepend(glow); }
+          card.addEventListener('pointermove', e=>{
+            const r = card.getBoundingClientRect();
+            const x = (e.clientX - r.left)/r.width - 0.5;
+            const y = (e.clientY - r.top)/r.height - 0.5;
+            const rx = (y * -6).toFixed(2);
+            const ry = (x * 6).toFixed(2);
+            card.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg) translateZ(0)`;
+            glow.style.setProperty('--mx', `${(x+0.5)*100}%`);
+            glow.style.setProperty('--my', `${(y+0.5)*100}%`);
+          });
+          card.addEventListener('pointerleave', ()=> card.style.transform = 'translateZ(0)');
+        });
+      }
+      bindTilt();
+      window.__bindTilt = bindTilt;
+    })();
+
+    // Animate skills bars when visible
+    (function(){
+      const section = document.getElementById('skills');
+      const bars = Array.from(section.querySelectorAll('.bar > i'));
+      const sparks = Array.from(section.querySelectorAll('.bar .spark'));
+      function animate(){
+        bars.forEach((b,i)=>{
+          const w = b.style.getPropertyValue('--w') || '70%';
+          b.style.width = w;
+          const sp = sparks[i];
+          if(sp) sp.style.transform = `translateX(${b.clientWidth}px)`;
+        });
+      }
+      const io = new IntersectionObserver((entries)=>{
+        entries.forEach(e=>{ if(e.isIntersecting) animate() });
+      }, {threshold:0.4});
+      io.observe(section);
+    })();
+
+    // Animate goal rings (text perfectly centered via grid)
+    (function(){
+      const dials = document.querySelectorAll('.dial');
+      const io = new IntersectionObserver((entries)=>{
+        entries.forEach(e=>{
+          if(!e.isIntersecting) return;
+          const d = e.target;
+          const target = parseInt(d.style.getPropertyValue('--val')) || 0;
+          let cur = 0;
+          const tick = ()=>{
+            cur += (target-cur)*0.15;
+            d.style.setProperty('--val', `${cur.toFixed(1)}%`);
+            d.textContent = `${Math.round(cur)}%`;
+            if(Math.abs(cur-target) > 0.5) requestAnimationFrame(tick);
+            else { d.style.setProperty('--val', `${target}%`); d.textContent = `${target}%`; }
+          };
+          tick();
+          io.unobserve(d);
+        });
+      }, {threshold:0.2});
+      dials.forEach(d=> io.observe(d));
+    })();
+
+    // GitHub API: latest repos (MaksimBin), with AI buttons
+    (async function(){
+      const user = 'MaksimBin';
+      const target = document.getElementById('repos');
+      try{
+        const res = await fetch(`https://api.github.com/users/${user}/repos?sort=updated`);
+        if(!res.ok) throw new Error('GitHub API error');
+        const repos = await res.json();
+        const top = repos
+          .filter(r => !r.fork)
+          .sort((a,b)=> (b.stargazers_count||0) - (a.stargazers_count||0))
+          .slice(0,6);
+        target.innerHTML = top.map(r => `
+          <article class="card tilt">
+            <div class="glow"></div>
+            <h3>${r.name}</h3>
+            <p style="color:var(--muted)">${r.description || ''}</p>
+            <div style="display:flex;gap:10px;margin-top:8px;color:#b8cfff;font-size:13px">
+              <span>★ ${r.stargazers_count}</span>
+              <span>⎇ ${r.forks_count}</span>
+              <span>${r.language || '—'}</span>
+            </div>
+            <a class="btn-github" href="${r.html_url}" target="_blank">GitHub →</a>
+          </article>
+        `).join('');
+        window.__bindTilt && window.__bindTilt(target);
+      }catch(err){
+        target.innerHTML = `<article class="card"><div class="glow"></div><p style="color:#ffb84d">Не удалось загрузить репозитории. Проверь username или сеть.</p></article>`;
+      }
+    })();
+  </script>
+</body>
+  </html>
