@@ -1,6 +1,6 @@
 // Создаём блок с сообщением
 const messageBlock = document.createElement("div");
-messageBlock.textContent = "Поверните экран";
+messageBlock.textContent = "Mobile version - поверните экран";
 messageBlock.style.cssText = `
   display: none;
   position: fixed;
