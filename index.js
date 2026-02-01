@@ -56,13 +56,13 @@ checkOrientation();
   const username = "MaksimBin"; // ← замени на свой GitHub username
   const btn = document.getElementById("showProjectsBtn");
 
-  // Стили кнопки открытия модалки
+  // Стили кнопки открытия
   btn.style.cssText = `
     display: block;
     margin: 20px auto;
     background: linear-gradient(90deg, #00ff88, #00cc44);
     color: #121212;
-    padding: 10px 20px;
+    padding: 12px 24px;
     border-radius: 6px;
     border: none;
     cursor: pointer;
@@ -72,142 +72,102 @@ checkOrientation();
   btn.addEventListener("mouseover", () => btn.style.filter = "brightness(1.2)");
   btn.addEventListener("mouseout", () => btn.style.filter = "brightness(1)");
 
-  // Модалка
+  // Модалка на весь экран
   const modal = document.createElement("div");
   modal.style.cssText = `
     display: none;
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8);
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  `;
-  const content = document.createElement("div");
-  content.style.cssText = `
-    background: #1e1e1e;
-    border-radius: 8px;
-    padding: 20px;
-    width: 400px;
-    max-height: 70vh;
+    background: rgba(0,0,0,0.95);
     overflow-y: auto;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    color: #e0e0e0;
-    transform: scale(0.9);
-    transition: transform 0.3s ease;
-    text-align: center;
+    z-index: 10000;
+    padding: 40px 20px;
+    box-sizing: border-box;
   `;
-  const title = document.createElement("h2");
-  title.textContent = "Мои проекты";
-  title.style.cssText = "color:#00ff88; margin-bottom:10px;";
-  const list = document.createElement("ul");
-  list.style.cssText = "padding:0; list-style:none; margin:0;";
 
-  const closeBtn = document.createElement("button");
-  closeBtn.textContent = "Закрыть";
-  closeBtn.style.cssText = `
-    display: block;
-    margin: 20px auto;
-    background: linear-gradient(90deg, #00ff88, #00cc44);
-    color: #121212;
-    padding: 10px 20px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.3s ease;
+  const container = document.createElement("div");
+  container.style.cssText = `
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
   `;
-  closeBtn.addEventListener("mouseover", () => closeBtn.style.filter = "brightness(1.2)");
-  closeBtn.addEventListener("mouseout", () => closeBtn.style.filter = "brightness(1)");
-
-  content.appendChild(title);
-  content.appendChild(list);
-  content.appendChild(closeBtn);
-  modal.appendChild(content);
+  modal.appendChild(container);
   document.body.appendChild(modal);
 
-  // Добавляем кастомный стиль скроллбара
-  const style = document.createElement("style");
-  style.textContent = `
-    div::-webkit-scrollbar {
-      width: 8px;
-    }
-    div::-webkit-scrollbar-track {
-      background: #1e1e1e;
-      border-radius: 4px;
-    }
-    div::-webkit-scrollbar-thumb {
-      background: linear-gradient(180deg, #00ff88, #00cc44);
-      border-radius: 4px;
-    }
-    div::-webkit-scrollbar-thumb:hover {
-      filter: brightness(1.2);
-    }
-  `;
-  document.head.appendChild(style);
-
-  // Загрузка проектов
+  // Функция загрузки проектов
   async function fetchProjects() {
-    list.innerHTML = "<li>Загрузка...</li>";
+    container.innerHTML = "<p style='color:#00ff88;'>Загрузка...</p>";
     try {
       const res = await fetch(`https://api.github.com/users/${username}/repos`);
       const repos = await res.json();
-      list.innerHTML = "";
+      container.innerHTML = "";
       repos.forEach(repo => {
         if (repo.has_pages) {
-          const li = document.createElement("li");
-          const a = document.createElement("a");
-          a.href = `https://${username}.github.io/${repo.name}`;
-          a.textContent = repo.name;
-          a.target = "_blank";
-          a.style.cssText = `
-            display:inline-block;
-            background: linear-gradient(90deg, #00ff88, #00cc44);
-            color:#121212;
-            text-decoration:none;
-            font-weight:bold;
-            padding:6px 12px;
-            border-radius:4px;
-            margin:4px 0;
-            transition: all 0.3s ease;
+          const card = document.createElement("div");
+          card.style.cssText = `
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 20px;
+            color: #e0e0e0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
           `;
-          a.addEventListener("mouseover", () => a.style.filter = "brightness(1.2)");
-          a.addEventListener("mouseout", () => a.style.filter = "brightness(1)");
-          li.appendChild(a);
-          list.appendChild(li);
+          const title = document.createElement("h3");
+          title.textContent = repo.name;
+          title.style.cssText = "color:#00ff88; margin-bottom:10px;";
+          const desc = document.createElement("p");
+          desc.textContent = repo.description || "Без описания";
+          desc.style.cssText = "flex-grow:1; font-size:14px; margin-bottom:15px;";
+          const openBtn = document.createElement("button");
+          openBtn.textContent = "Открыть";
+          openBtn.style.cssText = `
+            background: linear-gradient(90deg, #00ff88, #00cc44);
+            color: #121212;
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            align-self: center;
+          `;
+          openBtn.addEventListener("mouseover", () => openBtn.style.filter = "brightness(1.2)");
+          openBtn.addEventListener("mouseout", () => openBtn.style.filter = "brightness(1)");
+          openBtn.addEventListener("click", () => {
+            window.open(`https://${username}.github.io/${repo.name}`, "_blank");
+            modal.style.display = "none"; // закрываем модалку
+          });
+
+          card.appendChild(title);
+          card.appendChild(desc);
+          card.appendChild(openBtn);
+          container.appendChild(card);
         }
       });
-      if (!list.children.length) {
-        list.innerHTML = "<li>Нет проектов с GitHub Pages</li>";
+      if (!container.children.length) {
+        container.innerHTML = "<p style='color:#00ff88;'>Нет проектов с GitHub Pages</p>";
       }
     } catch (err) {
-      list.innerHTML = "<li>Ошибка загрузки</li>";
+      container.innerHTML = "<p style='color:red;'>Ошибка загрузки</p>";
       console.error(err);
     }
   }
 
   // События
   btn.addEventListener("click", () => {
-    modal.style.display = "flex";
-    setTimeout(() => {
-      modal.style.opacity = "1";
-      content.style.transform = "scale(1)";
-    }, 10);
+    modal.style.display = "block";
     fetchProjects();
   });
-  closeBtn.addEventListener("click", () => {
-    modal.style.opacity = "0";
-    content.style.transform = "scale(0.9)";
-    setTimeout(() => modal.style.display = "none", 300);
-  });
+  // Закрытие по клику вне карточек (на фон)
   modal.addEventListener("click", (e) => {
     if (e.target === modal) {
-      modal.style.opacity = "0";
-      content.style.transform = "scale(0.9)";
-      setTimeout(() => modal.style.display = "none", 300);
+      modal.style.display = "none";
     }
   });
 })();
+
