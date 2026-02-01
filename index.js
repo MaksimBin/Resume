@@ -49,12 +49,17 @@ checkOrientation();
 
 
 
+
+
+
 (function() {
   const username = "MaksimBin"; // ← замени на свой GitHub username
   const btn = document.getElementById("showProjectsBtn");
 
-  // Стили для кнопки с hover‑эффектом
+  // Стили кнопки открытия модалки
   btn.style.cssText = `
+    display: block;
+    margin: 20px auto;
     background: linear-gradient(90deg, #00ff88, #00cc44);
     color: #121212;
     padding: 10px 20px;
@@ -64,14 +69,10 @@ checkOrientation();
     font-weight: bold;
     transition: all 0.3s ease;
   `;
-  btn.addEventListener("mouseover", () => {
-    btn.style.filter = "brightness(1.2)";
-  });
-  btn.addEventListener("mouseout", () => {
-    btn.style.filter = "brightness(1)";
-  });
+  btn.addEventListener("mouseover", () => btn.style.filter = "brightness(1.2)");
+  btn.addEventListener("mouseout", () => btn.style.filter = "brightness(1)");
 
-  // Создаём модалку
+  // Модалка
   const modal = document.createElement("div");
   modal.style.cssText = `
     display: none;
@@ -90,35 +91,37 @@ checkOrientation();
     background: #1e1e1e;
     border-radius: 8px;
     padding: 20px;
-    min-width: 300px;
+    width: 400px;
+    max-height: 70vh;
+    overflow-y: auto;
     box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     color: #e0e0e0;
     transform: scale(0.9);
     transition: transform 0.3s ease;
+    text-align: center;
   `;
   const title = document.createElement("h2");
   title.textContent = "Мои проекты";
   title.style.cssText = "color:#00ff88; margin-bottom:10px;";
   const list = document.createElement("ul");
+  list.style.cssText = "padding:0; list-style:none; margin:0;";
+
   const closeBtn = document.createElement("button");
   closeBtn.textContent = "Закрыть";
   closeBtn.style.cssText = `
-    margin-top: 15px;
+    display: block;
+    margin: 20px auto;
     background: linear-gradient(90deg, #00ff88, #00cc44);
     color: #121212;
-    padding: 8px 16px;
+    padding: 10px 20px;
     border-radius: 6px;
     border: none;
     cursor: pointer;
     font-weight: bold;
     transition: all 0.3s ease;
   `;
-  closeBtn.addEventListener("mouseover", () => {
-    closeBtn.style.filter = "brightness(1.2)";
-  });
-  closeBtn.addEventListener("mouseout", () => {
-    closeBtn.style.filter = "brightness(1)";
-  });
+  closeBtn.addEventListener("mouseover", () => closeBtn.style.filter = "brightness(1.2)");
+  closeBtn.addEventListener("mouseout", () => closeBtn.style.filter = "brightness(1)");
 
   content.appendChild(title);
   content.appendChild(list);
@@ -126,7 +129,27 @@ checkOrientation();
   modal.appendChild(content);
   document.body.appendChild(modal);
 
-  // Функция загрузки проектов
+  // Добавляем кастомный стиль скроллбара
+  const style = document.createElement("style");
+  style.textContent = `
+    div::-webkit-scrollbar {
+      width: 8px;
+    }
+    div::-webkit-scrollbar-track {
+      background: #1e1e1e;
+      border-radius: 4px;
+    }
+    div::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #00ff88, #00cc44);
+      border-radius: 4px;
+    }
+    div::-webkit-scrollbar-thumb:hover {
+      filter: brightness(1.2);
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Загрузка проектов
   async function fetchProjects() {
     list.innerHTML = "<li>Загрузка...</li>";
     try {
@@ -151,12 +174,8 @@ checkOrientation();
             margin:4px 0;
             transition: all 0.3s ease;
           `;
-          a.addEventListener("mouseover", () => {
-            a.style.filter = "brightness(1.2)";
-          });
-          a.addEventListener("mouseout", () => {
-            a.style.filter = "brightness(1)";
-          });
+          a.addEventListener("mouseover", () => a.style.filter = "brightness(1.2)");
+          a.addEventListener("mouseout", () => a.style.filter = "brightness(1)");
           li.appendChild(a);
           list.appendChild(li);
         }
@@ -182,17 +201,13 @@ checkOrientation();
   closeBtn.addEventListener("click", () => {
     modal.style.opacity = "0";
     content.style.transform = "scale(0.9)";
-    setTimeout(() => {
-      modal.style.display = "none";
-    }, 300);
+    setTimeout(() => modal.style.display = "none", 300);
   });
   modal.addEventListener("click", (e) => {
     if (e.target === modal) {
       modal.style.opacity = "0";
       content.style.transform = "scale(0.9)";
-      setTimeout(() => {
-        modal.style.display = "none";
-      }, 300);
+      setTimeout(() => modal.style.display = "none", 300);
     }
   });
 })();
