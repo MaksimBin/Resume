@@ -50,7 +50,7 @@ checkOrientation();
 
 
 (function() {
-  const username = "maxim"; // ← замени на свой GitHub username
+  const username = "MaksimBin"; // ← замени на свой GitHub username
   const btn = document.getElementById("showProjectsBtn");
 
   // Стили для кнопки с hover‑эффектом
